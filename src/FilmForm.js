@@ -6,33 +6,44 @@ class FilmForm extends Component {
     super(props);
     this.state = {
       value: '',
-      dirtyForm: false,
+      hasErrors: false,
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleBlur = this.handleBlur.bind(this);
+    this.formHasErrors = this.formHasErrors.bind(this);
   }
 
   handleBlur() {
     this.setState({
       dirtyForm: true,
+      hasErrors: this.formHasErrors(this.state.value),
     })
   }
 
   handleChange(event) {
-    this.setState({value: event.target.value});
+    const val = event.target.value;
+    this.setState({
+      value: val,
+      hasErrors: val.length > 0 ? this.formHasErrors(val) : false,
+    });
   }
 
   handleSubmit(event) {
-    alert('A name was submitted: ' + this.state.value);
+    if (this.state.hasErrors) {
+      event.preventDefault();
+      return;
+    }
+    this.props.makeAPIRequest(this.state.value);
     event.preventDefault();
   }
 
+  formHasErrors(val) {
+    return !val.match(/\b[1-7]\b/);
+  };
+
   render() {
-    const formHasErrors = () => {
-      return this.state.dirtyForm && !this.state.value.match(/\b[1-7]\b/);
-    };
     return (
       <form onSubmit={this.handleSubmit}>
         <label>
@@ -44,7 +55,7 @@ class FilmForm extends Component {
           />
         </label>
         <input type="submit" value="Submit" />
-        { formHasErrors() ? (
+        { this.state.hasErrors ? (
           <p className="film-form__error">Please enter a number 1 through 7</p>
         ) : ''}
 

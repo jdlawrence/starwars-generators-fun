@@ -1,12 +1,48 @@
 const BASE_URL = 'https://swapi.co/api'
+function run(genFunc){
+  const genObject= genFunc(); //creating a generator object
+
+  function iterate(iteration){ //recursive function to iterate through promises
+    const yieldedObject = iteration.value;
+    if(iteration.done) //stop iterating when done and return the final value wrapped in a promise
+      return Promise.resolve(iteration.value);
+    return Promise.resolve(iteration.value) //returns a promise with its then() and catch() methods filled
+      .then(x => iterate(genObject.next(x))) //calls recursive function on the next value to be iterated
+      .catch(x => iterate(genObject.throw(x))); //throws an error if a rejection is encountered
+  }
+
+  try {
+    return iterate(genObject.next()); //starts the recursive loop
+  } catch (ex) {
+      return Promise.reject(ex); //returns a rejected promise if an exception is caught
+  }
+}
+
+const requestParams = {
+  method : 'GET',
+  mode: 'cors',
+  headers : {
+      "Content-Type": "application/json",
+  }
+};
+
+const getListOfShips = (doneCallback) => {
+  const request = new Request(`${BASE_URL}/starships`, requestParams);
+
+  function *gen(){
+    const shipsResp = yield fetch(request);
+    const shipsList = yield shipsResp.json();
+
+    doneCallback(shipsList.results);
+
+    return 'all done!!'
+
+  }
+  run(gen).then(x => {
+    console.log('finished?', x);
+  }).catch(x => console.log(x.message));
+}
 const getFilmInfo = (filmNumber, doneCallback) => {
-  const requestParams = {
-    method : 'GET',
-    mode: 'cors',
-    headers : {
-        "Content-Type": "application/json",
-    }
-  };
 
   const request = new Request(`${BASE_URL}/films/${filmNumber}`, requestParams);
 
@@ -33,26 +69,6 @@ const getFilmInfo = (filmNumber, doneCallback) => {
     doneCallback(result);
     return 'all done!';
   }
-
-  function run(genFunc){
-    const genObject= genFunc(); //creating a generator object
-
-    function iterate(iteration){ //recursive function to iterate through promises
-      const yieldedObject = iteration.value;
-      if(iteration.done) //stop iterating when done and return the final value wrapped in a promise
-        return Promise.resolve(iteration.value);
-      return Promise.resolve(iteration.value) //returns a promise with its then() and catch() methods filled
-        .then(x => iterate(genObject.next(x))) //calls recursive function on the next value to be iterated
-        .catch(x => iterate(genObject.throw(x))); //throws an error if a rejection is encountered
-    }
-
-    try {
-      return iterate(genObject.next()); //starts the recursive loop
-    } catch (ex) {
-        return Promise.reject(ex); //returns a rejected promise if an exception is caught
-    }
-  }
-
   run(gen).then(x => {
     console.log('x', x);
   }).catch(x => console.log(x.message));
@@ -60,4 +76,5 @@ const getFilmInfo = (filmNumber, doneCallback) => {
 
 export {
   getFilmInfo,
+  getListOfShips,
 };

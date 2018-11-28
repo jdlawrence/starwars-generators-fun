@@ -1,3 +1,37 @@
-.main-page__film-header {
-  font-weight: bold;
+.main-page {
+  &__container {
+    display: flex;
+  }
+
+  &__films-characters {
+    border-right: 3px solid gray;
+  }
+
+  &__ships {
+    padding: 10px 0 0 10px;
+  }
+
+  &__dropdown-compare {
+    display: flex;
+  }
+
+  &__ship-display {
+    margin-top: 15px;
+
+    & table, th, td {
+      border: 1px solid black;
+    }
+
+    &--first-column {
+      min-width: 90px;
+    }
+  }
+
+  &--highlighted {
+    background-color: red;
+  }
+
+  &__film-header {
+    font-weight: bold;
+  }
 }
